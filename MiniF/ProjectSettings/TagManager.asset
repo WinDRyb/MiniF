@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - Footballer
+  - Ball
+  - MatchController
   layers:
   - Default
   - TransparentFX

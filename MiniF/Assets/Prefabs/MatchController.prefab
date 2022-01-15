@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 779612639177380697}
   m_Layer: 0
   m_Name: MatchController
-  m_TagString: Untagged
+  m_TagString: MatchController
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -43,3 +43,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e43a201ce290fa4ca9cd6bf5e012b23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allPlayers: []
+  topTeamPlayers: []
+  botTeamPlayers: []

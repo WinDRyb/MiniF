@@ -41,6 +41,6 @@ public class TargetTest : MonoBehaviour
         Gizmos.DrawLine(transform.position, transform.position + vector1 * 7f);
         Gizmos.DrawLine(transform.position, transform.position + vector2 * 7f);
         Gizmos.color = Color.red;
-        Gizmos.DrawSphere(FootballHelpers.GetActionTargetPosition(transform.position, vector1, vector2, _matchController.GetAllPlayersPositions()), 0.2f);
+        Gizmos.DrawSphere(FootballHelpers.GetActionTargetPosition(transform.position, vector1, vector2, _matchController.GetAllPlayers()).transform.position, 0.2f);
     }
 }

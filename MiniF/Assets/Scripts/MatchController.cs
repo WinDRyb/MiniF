@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,15 +12,5 @@ public class MatchController : MonoBehaviour
     {
         return allPlayers;
     }
-
-    public List<Vector3> GetAllPlayersPositions()
-    {
-        List<Vector3> positions = new List<Vector3>(allPlayers.Count);
-        foreach (GameObject player in allPlayers)
-        {
-            positions.Add(player.transform.position);
-        }
-
-        return positions;
-    }
+    
 }

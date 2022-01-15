@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     private bool move;
     private Vector3 rotation;
+    private float actionPower;
 
     private Footballer _footballer;
 
@@ -32,6 +33,22 @@ public class PlayerController : MonoBehaviour
         {
             rotation = Vector3.back;
         }
+
+        if (Input.GetKey(KeyCode.Space))
+        {
+            actionPower += 10f * Time.deltaTime;
+        }
+
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            GameObject teammate = _footballer.MakePass(actionPower);
+            // transplant controller if there was a target for pass
+            if (teammate)
+            {
+                TransplantController(teammate);
+            }
+            actionPower = 0f;
+        }
     }
 
     private void FixedUpdate()
@@ -45,5 +62,11 @@ public class PlayerController : MonoBehaviour
         {
             _footballer.CharacterRotate(rotation);
         }
+    }
+
+    private void TransplantController(GameObject nextPlayer)
+    {
+        nextPlayer.AddComponent<PlayerController>();
+        Destroy(this);
     }
 }
