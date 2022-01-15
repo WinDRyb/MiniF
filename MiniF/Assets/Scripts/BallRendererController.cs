@@ -10,7 +10,7 @@ public class BallRendererController : MonoBehaviour
     {
         parentPosition = transform.parent.position;
         nextPosition.x = parentPosition.x;
-        nextPosition.y = parentPosition.y + parentPosition.z * 0.7f;
+        nextPosition.y = parentPosition.y + parentPosition.z * 0.5f;
         nextPosition.z = 0f;
         transform.position = nextPosition;
     }
