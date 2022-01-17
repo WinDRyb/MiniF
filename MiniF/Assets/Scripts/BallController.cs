@@ -10,7 +10,7 @@ public class BallController : MonoBehaviour
     private CapsuleCollider _currentFootballerCollider;
     private Footballer _currentFootballerScript;
     private float ballMass;
-    private bool repairJoingAnchor;
+    private bool repairJointAnchor;
     private Vector3 frontAnchorPoint = Vector3.right * 0.3f;
 
     private void Awake()
@@ -34,7 +34,7 @@ public class BallController : MonoBehaviour
         _hingeJoint = gameObject.AddComponent<HingeJoint>();
         _hingeJoint.connectedBody = footballer.GetComponent<Rigidbody>();
         _hingeJoint.autoConfigureConnectedAnchor = false;
-        repairJoingAnchor = true;
+        repairJointAnchor = true;
 
         // lower mass of ball so it doesn't make footballer move slower
         _rigidbody.mass = 0.001f;
@@ -55,7 +55,7 @@ public class BallController : MonoBehaviour
         StartCoroutine(ReEnableCollisions(_currentFootballerCollider, 0.5f));
 
         // in case position of anchor is still changing
-        repairJoingAnchor = false;
+        repairJointAnchor = false;
         // remove HingeJoint
         Destroy(_hingeJoint);
         // set back normal ball mass
@@ -68,7 +68,7 @@ public class BallController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (repairJoingAnchor)
+        if (repairJointAnchor)
         {
             RepairHingeJointAnchorPosition();
         }
@@ -81,7 +81,7 @@ public class BallController : MonoBehaviour
         // stop when vectors are approximately even
         if (_hingeJoint.connectedAnchor == frontAnchorPoint)
         {
-            repairJoingAnchor = false;
+            repairJointAnchor = false;
             // enable collisions with footballer when HingeJoint is in the right place
             Physics.IgnoreCollision(_collider, _currentFootballerCollider, false); 
         }

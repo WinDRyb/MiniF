@@ -17,7 +17,13 @@ public class Footballer : MonoBehaviour
     private FootballerStats _footballerStats;
     private Rigidbody _ballRigidbody;
     private BallController _ballController;
+    
     private MatchController _matchController;
+
+    public MatchController _MatchController
+    {
+        get { return _matchController; }
+    }
 
     private void Awake()
     {
@@ -62,7 +68,7 @@ public class Footballer : MonoBehaviour
     }
 
     // returns true if there was a target for pass
-    public GameObject MakePass(float power)
+    public GameObject MakePass(float power, float zVelocity=0f)
     {
         if (hasBall)
         {
@@ -80,6 +86,9 @@ public class Footballer : MonoBehaviour
             {
                 direction = transform.right;
             }
+
+            // set how high will pass go
+            direction.z = zVelocity;
 
             float accuracy = UnityEngine.Random.Range(0f, 15f - _footballerStats.PassAccuracy) * GeneralHelpers.RandomSign();
             direction = Quaternion.Euler(0f, 0f, accuracy) * direction;

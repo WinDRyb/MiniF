@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 
 public static class FootballHelpers
 {
@@ -21,9 +22,10 @@ public static class FootballHelpers
             // target is between given vectors
             if (Vector3.Angle(bound1, target - actionPosition) < angleArea && Vector3.Angle(bound2, target - actionPosition) < angleArea)
             {
-                float targetDistance = Vector3.Distance(actionPosition, target);
+                float targetDistance = (target - actionPosition).sqrMagnitude;
                 if (targetDistance < closestTargetDistance)
                 {
+                    closestTargetDistance = targetDistance;
                     closestTarget = target;
                 }
             }
@@ -49,11 +51,36 @@ public static class FootballHelpers
             // target is between given vectors
             if (Vector3.Angle(bound1, targetPosition - actionPosition) < angleArea && Vector3.Angle(bound2, targetPosition - actionPosition) < angleArea)
             {
-                float targetDistance = Vector3.Distance(actionPosition, targetPosition);
+                float targetDistance = (targetPosition - actionPosition).sqrMagnitude;
                 if (targetDistance < closestTargetDistance)
                 {
+                    closestTargetDistance = targetDistance;
                     closestTarget = target;
                 }
+            }
+        }
+
+        return closestTarget;
+    }
+
+    public static GameObject GetClosestTarget(Vector3 position, List<GameObject> targetList)
+    {
+        GameObject closestTarget = null;
+        float closestTargetDistance = float.MaxValue;
+
+        foreach (GameObject target in targetList)
+        {
+            Vector3 targetPosition = target.transform.position;
+            // can't target itself
+            if (targetPosition == position)
+            {
+                continue;
+            }
+            float targetDistance = (targetPosition - position).sqrMagnitude;
+            if (targetDistance < closestTargetDistance)
+            {
+                closestTargetDistance = targetDistance;
+                closestTarget = target;
             }
         }
 
