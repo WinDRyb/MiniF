@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 4032632502702655874}
   - component: {fileID: 6819291814453852876}
   - component: {fileID: 6678254444403497274}
-  - component: {fileID: 6520889428684880355}
+  - component: {fileID: 9177912434529251271}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Ball
@@ -146,7 +146,7 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.140625
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6520889428684880355
+--- !u!114 &9177912434529251271
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -155,10 +155,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3542768319286594066}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1fd795441d201f648ac7b3c877991645, type: 3}
+  m_Script: {fileID: 11500000, guid: e347f8f01ba3f7749a1cd652840c431f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  direction: {x: 0.2, y: 1, z: 0.3}
 --- !u!1 &9081345872921130785
 GameObject:
   m_ObjectHideFlags: 0
