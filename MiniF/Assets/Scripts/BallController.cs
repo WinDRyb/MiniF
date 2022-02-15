@@ -20,13 +20,12 @@ public class BallController : MonoBehaviour {
 
     private void OnCollisionEnter(Collision collision) {
         if (collision.gameObject.CompareTag("Footballer")) {
-            _currentFootballerScript = collision.gameObject.GetComponent<Footballer>();
-                
             if (!_currentFootballerCollider) {
                 OnFootballerPossessionEnter(collision.gameObject);
             }
 
-            if (_currentFootballerCollider && _currentFootballerScript.IsDuringSlide) {
+            if (_currentFootballerCollider && collision.gameObject.GetComponent<Footballer>().IsDuringSlide) {
+                OnFootballerPossessionExit();
                 OnFootballerPossessionEnter(collision.gameObject);
             }
         }
@@ -43,6 +42,7 @@ public class BallController : MonoBehaviour {
         _rigidbody.mass = 0.001f;
 
         // let footballer know that he is in possession of ball now
+        _currentFootballerScript = footballer.GetComponent<Footballer>();
         _currentFootballerScript.HasBall = true;
         _currentFootballerCollider = footballer.GetComponent<CapsuleCollider>();
         // disable collision so HingeJoint can be corrected

@@ -115,28 +115,50 @@ public class Footballer : MonoBehaviour {
         return null;
     }
 
+    public void Shot(Vector3 goalPosition, float power) {
+        
+    }
+
     public void MakeSlideTackle() {
         if (isImmobilized) {
             return;
         }
         // move forward while sliding
         MoveTo(transform.position + transform.right, _footballerStats.SlideTackleSpeed);
+        _footballerAnimationController.PlaySlideTackleAnimation();
+
         // immobilize footballer after slide tackle
         isImmobilized = true;
         isDuringSlide = true;
-        _footballerAnimationController.PlaySlideTackleAnimation();
-
         StartCoroutine(DisableImmobilization(1f));
         StartCoroutine(DisableSliding(1f));
     }
+
+    public void Fall() {
+        if (isImmobilized) {
+            return;
+        }
+        // immobilize footballer after falling
+        _footballerAnimationController.PlayFallAnimation();
+        
+        if (hasBall) {
+            _ballController.OnFootballerPossessionExit();
+            
+            // move ball a bit forward
+            _ballRigidbody.velocity = transform.right * 2f;
+        }
+        
+        isImmobilized = true;
+        StartCoroutine(DisableImmobilization(1.5f));
+    }
     
-    IEnumerator DisableImmobilization(float time) {
-        yield return new WaitForSeconds(time);
+    IEnumerator DisableImmobilization(float delayTime) {
+        yield return new WaitForSeconds(delayTime);
         isImmobilized = false;
     }
     
-    IEnumerator DisableSliding(float time) {
-        yield return new WaitForSeconds(time);
+    IEnumerator DisableSliding(float delayTime) {
+        yield return new WaitForSeconds(delayTime);
         isDuringSlide = false;
     }
 }
