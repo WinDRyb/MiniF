@@ -8,7 +8,7 @@ public class BallRendererController : MonoBehaviour {
     private void Update() {
         parentPosition = transform.parent.position;
         nextPosition.x = parentPosition.x;
-        nextPosition.y = parentPosition.y + parentPosition.z * 0.5f;
+        nextPosition.y = parentPosition.y + parentPosition.z;
         nextPosition.z = 0f;
         transform.position = nextPosition;
     }

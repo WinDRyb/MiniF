@@ -16,13 +16,13 @@ public class PlayerController : MonoBehaviour {
         movement = new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), 0).normalized;
 
         if (_footballer.HasBall) {
-            if (Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.X)) {
+            if (Input.GetKey(KeyCode.C) || Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Z)) {
                 actionPower += 10f * Time.deltaTime;
             }
 
             // make ground pass
-            if (Input.GetKeyUp(KeyCode.Z)) {
-                GameObject teammate = _footballer.MakePass(actionPower);
+            if (Input.GetKeyUp(KeyCode.C)) {
+                GameObject teammate = _footballer.Pass(actionPower);
                 // transplant controller if there was a target for pass
                 if (teammate) {
                     TransplantController(teammate);
@@ -33,12 +33,25 @@ public class PlayerController : MonoBehaviour {
 
             // make high pass
             if (Input.GetKeyUp(KeyCode.X)) {
-                GameObject teammate = _footballer.MakePass(actionPower, 0.5f);
+                GameObject teammate = _footballer.Pass(actionPower, 0.5f);
                 // transplant controller if there was a target for pass
                 if (teammate) {
                     TransplantController(teammate);
                 }
 
+                actionPower = 0f;
+            }
+            
+            // shot
+            if (Input.GetKeyUp(KeyCode.Z)) {
+                Vector3 additionalDirection = Vector3.zero;
+                if (Input.GetKey(KeyCode.RightArrow)) {
+                    additionalDirection = Vector3.right;
+                } else if (Input.GetKey(KeyCode.LeftArrow)) {
+                    additionalDirection = Vector3.left;
+                }
+
+                _footballer.Shot(additionalDirection, actionPower, 0.3f);
                 actionPower = 0f;
             }
         }

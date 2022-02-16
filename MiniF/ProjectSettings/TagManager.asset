@@ -7,6 +7,8 @@ TagManager:
   - Footballer
   - Ball
   - MatchController
+  - TopGoal
+  - BotGoal
   layers:
   - Default
   - TransparentFX

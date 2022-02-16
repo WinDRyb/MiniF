@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -8,10 +7,17 @@ public class BallController : MonoBehaviour {
     private HingeJoint _hingeJoint;
     private CapsuleCollider _currentFootballerCollider;
     private Footballer _currentFootballerScript;
+    
     private float ballMass;
     private bool repairJointAnchor;
     private Vector3 frontAnchorPoint = Vector3.right * 0.3f;
 
+    private Team teamInPossessionOfBall = Team.None;
+    public Team TeamInPossessionOfBall {
+        get { return teamInPossessionOfBall; }
+        set { teamInPossessionOfBall = value; }
+    } 
+    
     private void Awake() {
         _rigidbody = GetComponent<Rigidbody>();
         _collider = GetComponent<SphereCollider>();
@@ -45,6 +51,10 @@ public class BallController : MonoBehaviour {
         _currentFootballerScript = footballer.GetComponent<Footballer>();
         _currentFootballerScript.HasBall = true;
         _currentFootballerCollider = footballer.GetComponent<CapsuleCollider>();
+
+        // set team in possession of ball
+        teamInPossessionOfBall = _currentFootballerScript.FootballerTeam;
+        
         // disable collision so HingeJoint can be corrected
         Physics.IgnoreCollision(_collider, _currentFootballerCollider, true);
     }
@@ -65,6 +75,9 @@ public class BallController : MonoBehaviour {
         // footballer is not in possession of ball
         _currentFootballerScript.HasBall = false;
         _currentFootballerCollider = null;
+
+        // no team possesses ball
+        teamInPossessionOfBall = Team.None;
     }
 
     private void FixedUpdate() {
