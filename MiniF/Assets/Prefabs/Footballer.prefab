@@ -96,6 +96,8 @@ GameObject:
   - component: {fileID: 7923802112737670900}
   - component: {fileID: 5373049852047040229}
   - component: {fileID: 5985545601038624877}
+  - component: {fileID: 5424271786048200409}
+  - component: {fileID: 8301079503782461819}
   m_Layer: 0
   m_Name: Footballer
   m_TagString: Footballer
@@ -177,7 +179,8 @@ MonoBehaviour:
   rotationSpeed: 300
   slideTackleSpeed: 2
   maxActionPower: 10
-  passAccuracy: 10
+  passInaccuracy: 10
+  shotInaccuracy: 10
 --- !u!114 &5985545601038624877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188,6 +191,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 19c703ca1ced160418d634b671f291bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5424271786048200409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2669752644313820251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a941f11351d84447a3846aa573e8745, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPosition: {x: 0, y: 0, z: 0}
+  maxForwardPosition: {x: 0, y: 0, z: 0}
+  maxBackwardPosition: {x: 0, y: 0, z: 0}
+  ballControlZone:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+--- !u!114 &8301079503782461819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2669752644313820251}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4a5c1f32d628af4fa341dd1fb5a712a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &3319570340849162398

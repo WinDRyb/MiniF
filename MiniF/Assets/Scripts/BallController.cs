@@ -7,11 +7,18 @@ public class BallController : MonoBehaviour {
     private HingeJoint _hingeJoint;
     private CapsuleCollider _currentFootballerCollider;
     private Footballer _currentFootballerScript;
+    private MatchController _matchController;
     
     private float ballMass;
     private bool repairJointAnchor;
     private Vector3 frontAnchorPoint = Vector3.right * 0.3f;
 
+    private bool isInPlay = true;
+    public bool IsInPlay {
+        get { return isInPlay; }
+        set { isInPlay = value; }
+    } 
+    
     private Team teamInPossessionOfBall = Team.None;
     public Team TeamInPossessionOfBall {
         get { return teamInPossessionOfBall; }
@@ -21,6 +28,8 @@ public class BallController : MonoBehaviour {
     private void Awake() {
         _rigidbody = GetComponent<Rigidbody>();
         _collider = GetComponent<SphereCollider>();
+        _matchController = GameObject.FindWithTag("MatchController").GetComponent<MatchController>();
+        
         ballMass = _rigidbody.mass;
     }
 
@@ -36,7 +45,30 @@ public class BallController : MonoBehaviour {
             }
         }
     }
+    private void FixedUpdate() {
+        if (repairJointAnchor) {
+            RepairHingeJointAnchorPosition();
+        }
+    }
 
+    private void RepairHingeJointAnchorPosition() {
+        // slowly move ball to right anchor point
+        _hingeJoint.connectedAnchor = Vector3.MoveTowards(_hingeJoint.connectedAnchor, frontAnchorPoint, 0.01f);
+        // stop when vectors are approximately even
+        if (_hingeJoint.connectedAnchor == frontAnchorPoint) {
+            repairJointAnchor = false;
+            // enable collisions with footballer when HingeJoint is in the right place
+            Physics.IgnoreCollision(_collider, _currentFootballerCollider, false);
+        }
+    }
+
+    IEnumerator ReEnableCollisions(CapsuleCollider footballerCollider, float delayTime) {
+        yield return new WaitForSeconds(delayTime);
+
+        // enable collisions with previous footballer
+        Physics.IgnoreCollision(_collider, footballerCollider, false);
+    }
+    
     private void OnFootballerPossessionEnter(GameObject footballer) {
         // create and setup new HingeJoint
         _hingeJoint = gameObject.AddComponent<HingeJoint>();
@@ -54,6 +86,9 @@ public class BallController : MonoBehaviour {
 
         // set team in possession of ball
         teamInPossessionOfBall = _currentFootballerScript.FootballerTeam;
+        
+        // change player controlled footballer when ai controlled teammate captured ball
+        _matchController.SetPlayerControlledFootballer(footballer, teamInPossessionOfBall);
         
         // disable collision so HingeJoint can be corrected
         Physics.IgnoreCollision(_collider, _currentFootballerCollider, true);
@@ -80,27 +115,15 @@ public class BallController : MonoBehaviour {
         teamInPossessionOfBall = Team.None;
     }
 
-    private void FixedUpdate() {
-        if (repairJointAnchor) {
-            RepairHingeJointAnchorPosition();
-        }
+    public void SetNewBallPosition(Vector3 position) {
+        StartCoroutine(TeleportAfterDelay(position, 1f));
     }
 
-    private void RepairHingeJointAnchorPosition() {
-        // slowly move ball to right anchor point
-        _hingeJoint.connectedAnchor = Vector3.MoveTowards(_hingeJoint.connectedAnchor, frontAnchorPoint, 0.01f);
-        // stop when vectors are approximately even
-        if (_hingeJoint.connectedAnchor == frontAnchorPoint) {
-            repairJointAnchor = false;
-            // enable collisions with footballer when HingeJoint is in the right place
-            Physics.IgnoreCollision(_collider, _currentFootballerCollider, false);
-        }
-    }
-
-    IEnumerator ReEnableCollisions(CapsuleCollider footballerCollider, float delayTime) {
+    public IEnumerator TeleportAfterDelay(Vector3 position, float delayTime) {
         yield return new WaitForSeconds(delayTime);
-
-        // enable collisions with previous footballer
-        Physics.IgnoreCollision(_collider, footballerCollider, false);
+        
+        _rigidbody.velocity = Vector3.zero;
+        _rigidbody.rotation = Quaternion.Euler(Vector3.zero);
+        _rigidbody.position = position;
     }
 }

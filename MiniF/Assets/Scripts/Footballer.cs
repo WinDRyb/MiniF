@@ -82,6 +82,13 @@ public class Footballer : MonoBehaviour {
         }
     }
 
+    // used by EventMovementController, returns footballer position
+    public Vector3 MoveToPosition(Vector3 targetPosition) {
+        Vector3 direction = (targetPosition - transform.position).normalized;
+        _rigidbody.velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed;
+        return transform.position;
+    }
+
     public void CharacterRotate(Vector3 rotation) {
         Quaternion rot = Quaternion.Euler(rotation * Time.fixedDeltaTime * _footballerStats.RotationSpeed);
         _rigidbody.MoveRotation(_rigidbody.rotation * rot);

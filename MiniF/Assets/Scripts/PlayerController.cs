@@ -69,10 +69,21 @@ public class PlayerController : MonoBehaviour {
     private void FixedUpdate() {
         _footballer.MoveInDirection(movement);
     }
+    
+    private void OnEnable() {
+        // deactivate AI behaviour of footballer
+        GetComponent<BasicAI>().enabled = false;
+    }
+    
+    private void OnDisable() {
+        // activate AI behaviour of footballer
+        GetComponent<BasicAI>().enabled = true;
+    }
 
+    // enable PlayerController on teammate and disable this controller
     private void TransplantController(GameObject nextPlayer) {
-        nextPlayer.AddComponent<PlayerController>();
-        Destroy(this);
+        // let MatchController know which footballer is controlled by player
+        _footballer._MatchController.SetPlayerControlledFootballer(nextPlayer, _footballer.FootballerTeam);
     }
 
     private void ChangeWithoutBall() {

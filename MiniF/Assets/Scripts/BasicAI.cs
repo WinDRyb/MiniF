@@ -9,28 +9,42 @@ public class BasicAI : MonoBehaviour {
     protected Transform _ballTransform;
     protected Transform _topGoalTransform;
     protected Transform _botGoalTransform;
+    protected MatchController _matchController;
 
     // footballer position when ball is in the middle of pitch
     [SerializeField] protected Vector3 defaultPosition;
-    // how far towards opponent goal footballer can go
+    // how far right can footballer go (x), how far towards opponent goal can footballer go (y)
     [SerializeField] protected Vector3 maxForwardPosition;
-    // how close to team goal footballer can go
+    // how far left can footballer go (x), how close to team goal can footballer go (y)
     [SerializeField] protected Vector3 maxBackwardPosition;
-    
     // zone in which footballer goes towards ball
     [SerializeField] protected Bounds ballControlZone;
 
+    protected FootballEventType eventType = FootballEventType.None;
+    protected Vector3 eventPositionTarget;
+    
     protected virtual void Awake() {
         _footballerScript = GetComponent<Footballer>();
         GameObject ball = GameObject.FindWithTag("Ball");
         _ballController = ball.GetComponent<BallController>();
         _ballTransform = ball.GetComponent<Transform>();
-        _topGoalTransform = GameObject.FindWithTag("TopGoal").GetComponent<Transform>();
-        _botGoalTransform = GameObject.FindWithTag("BotGoal").GetComponent<Transform>();
+        _matchController = GameObject.FindWithTag("MatchController").GetComponent<MatchController>();
+        _topGoalTransform = _matchController.GetTopGoalTransform();
+        _botGoalTransform = _matchController.GetBotGoalTransform();
+
+        // set big z of bounds extents so it works for ball in air
+        ballControlZone.extents = new Vector3(ballControlZone.extents.x, ballControlZone.extents.y, 100f);
     }
 
     protected virtual void FixedUpdate() {
-        Move();
+        switch (eventType) {
+            case FootballEventType.None:
+                Move();
+                break;
+            case FootballEventType.ThrowIn:
+                MoveToThrowIn(eventPositionTarget);
+                break;
+        }
     }
 
     protected virtual void Move() {
@@ -51,7 +65,10 @@ public class BasicAI : MonoBehaviour {
         } 
         // ball is not in control zone
         else {
-            // orientation of team forward and backward 
+            float x = ((_ballTransform.position.x - defaultPosition.x) / 2f) + defaultPosition.x;
+            x = Mathf.Clamp(x, maxBackwardPosition.x, maxForwardPosition.x);
+            
+            // forward and backward orientation of team
             Vector3 direction = _ballTransform.position.y >= defaultPosition.y
                 ? (maxForwardPosition - maxBackwardPosition).normalized
                 : (maxBackwardPosition - maxForwardPosition).normalized;
@@ -64,8 +81,28 @@ public class BasicAI : MonoBehaviour {
                 ? Mathf.Clamp(y, maxBackwardPosition.y, maxForwardPosition.y)
                 : Mathf.Clamp(y, maxForwardPosition.y, maxBackwardPosition.y);
 
-            Vector3 targetPosition = new Vector3(defaultPosition.x, y, 0f);
+            Vector3 targetPosition = new Vector3(x, y, 0f);
             _footballerScript.MoveInDirection((targetPosition - transform.position).normalized);
         }
+    }
+
+    protected virtual void MoveToThrowIn(Vector3 throwInPosition) {
+        _footballerScript.MoveInDirection((throwInPosition - transform.position).normalized);
+        if (Vector3.Distance(transform.position, throwInPosition) < 0.1f) {
+            ThrowInReady();
+        }
+    }
+
+    public virtual void SetupThrowIn(Vector3 throwInPosition) {
+        eventType = FootballEventType.ThrowIn;
+        eventPositionTarget = throwInPosition;
+    }
+
+    protected virtual void ThrowInReady() {
+        _matchController.ThrowInReady(gameObject, _footballerScript.FootballerTeam);
+    }
+
+    private void OnDrawGizmos() {
+        Gizmos.DrawWireCube(ballControlZone.center, ballControlZone.size);
     }
 }
