@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -43,6 +44,16 @@ public class Footballer : MonoBehaviour {
         _matchController = GameObject.FindWithTag("MatchController").GetComponent<MatchController>();
     }
 
+    private void RotateInDirection(Vector3 direction) {
+        if (direction != Vector3.zero) {
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
+            targetRotation = Quaternion.RotateTowards(_rigidbody.rotation, targetRotation, _footballerStats.RotationSpeed * Time.fixedDeltaTime);
+        
+            _rigidbody.MoveRotation(targetRotation);
+        }
+    }
+    
     public void MoveTo(Vector3 targetPosition, float power) {
         Vector3 velocity = (targetPosition - transform.position) * power;
         _rigidbody.velocity = velocity;
@@ -73,13 +84,7 @@ public class Footballer : MonoBehaviour {
         }
 
         // rotate in movement direction
-        if (direction != Vector3.zero) {
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-            targetRotation = Quaternion.RotateTowards(_rigidbody.rotation, targetRotation, _footballerStats.RotationSpeed * Time.fixedDeltaTime);
-        
-            _rigidbody.MoveRotation(targetRotation);
-        }
+        RotateInDirection(direction);
     }
 
     // used by EventMovementController, returns footballer position
@@ -103,7 +108,7 @@ public class Footballer : MonoBehaviour {
         Vector3 bound1 = Quaternion.Euler(0f, 0f, 25f) * transform.right;
         Vector3 bound2 = Quaternion.Euler(0f, 0f, -25f) * transform.right;
         GameObject target = FootballHelpers.GetActionTargetPosition(transform.position, bound1, bound2,
-            _matchController.GetAllPlayers());
+            _matchController.GetTeamPlayers(FootballerTeam));
 
         Vector3 direction;
         // pass ahead if there is no target, otherwise pass to target
@@ -113,10 +118,10 @@ public class Footballer : MonoBehaviour {
         else {
             direction = transform.right;
         }
-
+        direction = direction.normalized;
+        
         // set how high will ball go
         direction.z = zVelocity;
-        direction = direction.normalized;
 
         float inaccuracy = UnityEngine.Random.Range(0f, 15f - _footballerStats.PassInaccuracy) * GeneralHelpers.RandomSign();
         direction = Quaternion.Euler(0f, 0f, inaccuracy) * direction;
@@ -148,11 +153,9 @@ public class Footballer : MonoBehaviour {
         Vector3 targetVector = (targetPosition - position).normalized;
         float inaccuracy = UnityEngine.Random.Range(0f, 15f - _footballerStats.ShotInaccuracy) * GeneralHelpers.RandomSign();
 
-        print(Vector3.Angle(transform.right, targetPosition));
-        
         // if footballer is facing away from goal shots have lower accuracy
         if (Vector3.Angle(transform.right, targetPosition) > 85f) {
-            inaccuracy *= 2f;
+            inaccuracy *= 3f;
         }
         
         targetVector.z = zVelocity;
@@ -197,6 +200,42 @@ public class Footballer : MonoBehaviour {
         
         isImmobilized = true;
         StartCoroutine(DisableImmobilization(1.5f));
+    }
+
+    public void ThrowInBoundedRotate(Vector3 direction) {
+        // get direction towards center of pitch
+        Vector3 pitchDirection = transform.position.x < 0f ? Vector3.right : Vector3.left;
+        // rotation bounds
+        Vector3 bound1 = Quaternion.Euler(0f, 0f, 75f) * pitchDirection;
+        Vector3 bound2 = Quaternion.Euler(0f, 0f, -75f) * pitchDirection;
+
+        float minY = Mathf.Min(bound1.y, bound2.y);
+        float maxY = Mathf.Max(bound1.y, bound2.y);
+
+        // don't rotate if there is no direction input and footballer rotation is in bounds
+        if (direction == Vector3.zero && Mathf.Sign(transform.right.x) == Mathf.Sign(pitchDirection.x) && transform.right.y > minY && transform.right.y < maxY) {
+            return;
+        }
+        
+        // both bounds x are the same
+        direction.x = bound1.x;
+        // clamp direction before rotating
+        direction.y = Mathf.Clamp(direction.y, minY, maxY);
+        
+        RotateInDirection(direction);
+    }
+
+    // first returned value is true if ball was thrown, false otherwise; second value is target to which ball was thrown, null if there was none
+    public Tuple<bool, GameObject> ThrowInPass(float power) {
+        Vector3 pitchDirection = transform.position.x < 0f ? Vector3.right : Vector3.left;
+        // if footballer is not facing towards pitch, throw is not possible
+        if (Mathf.Sign(transform.right.x) != Mathf.Sign(pitchDirection.x)) {
+            return new Tuple<bool, GameObject>(false, null);
+        }
+        
+        GameObject target = Pass(power, 0.5f);
+        _ballController.IsInPlay = true;
+        return new Tuple<bool, GameObject>(true, target);
     }
     
     IEnumerator DisableImmobilization(float delayTime) {

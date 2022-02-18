@@ -77,7 +77,7 @@ public class BallController : MonoBehaviour {
         repairJointAnchor = true;
 
         // lower mass of ball so it doesn't make footballer move slower
-        _rigidbody.mass = 0.001f;
+        _rigidbody.mass = 0.01f;
 
         // let footballer know that he is in possession of ball now
         _currentFootballerScript = footballer.GetComponent<Footballer>();
@@ -88,13 +88,18 @@ public class BallController : MonoBehaviour {
         teamInPossessionOfBall = _currentFootballerScript.FootballerTeam;
         
         // change player controlled footballer when ai controlled teammate captured ball
-        _matchController.SetPlayerControlledFootballer(footballer, teamInPossessionOfBall);
-        
+        if (isInPlay) {
+            _matchController.SetPlayerControlledFootballer(footballer, teamInPossessionOfBall);
+        }
+
         // disable collision so HingeJoint can be corrected
         Physics.IgnoreCollision(_collider, _currentFootballerCollider, true);
     }
 
     public void OnFootballerPossessionExit() {
+        if (TeamInPossessionOfBall == Team.None) {
+            return;
+        }
         // after loss of possession ignore collisions between footballer and ball for short while
         Physics.IgnoreCollision(_collider, _currentFootballerCollider, true);
         // call coroutine to reenable it soon

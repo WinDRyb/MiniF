@@ -21,6 +21,11 @@ public class BasicAI : MonoBehaviour {
     [SerializeField] protected Bounds ballControlZone;
 
     protected FootballEventType eventType = FootballEventType.None;
+
+    public FootballEventType EventType {
+        get { return eventType; }
+    }
+    
     protected Vector3 eventPositionTarget;
     
     protected virtual void Awake() {
@@ -97,11 +102,15 @@ public class BasicAI : MonoBehaviour {
         eventType = FootballEventType.ThrowIn;
         eventPositionTarget = throwInPosition;
     }
-
+    
     protected virtual void ThrowInReady() {
         _matchController.ThrowInReady(gameObject, _footballerScript.FootballerTeam);
     }
 
+    public virtual void EventCompleted() {
+        eventType = FootballEventType.None;
+    }
+    
     private void OnDrawGizmos() {
         Gizmos.DrawWireCube(ballControlZone.center, ballControlZone.size);
     }

@@ -43,6 +43,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e43a201ce290fa4ca9cd6bf5e012b23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _eventPointPrefab: {fileID: 2008514055927614081, guid: 5be7037cbce447942b427b767280527b, type: 3}
+  isTopTeamControlledByPlayer: 0
+  isBotTeamControlledByPlayer: 0
+  topGoalTransform: {fileID: 0}
+  botGoalTransform: {fileID: 0}
   allPlayers: []
   topTeamPlayers: []
   botTeamPlayers: []

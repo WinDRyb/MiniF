@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MatchController : MonoBehaviour {
+    [SerializeField] private GameObject _eventPointPrefab;
+    
     [SerializeField] private bool isTopTeamControlledByPlayer;
     [SerializeField] private bool isBotTeamControlledByPlayer;
     
@@ -23,6 +25,7 @@ public class MatchController : MonoBehaviour {
 
     private void Start() {
         AssignPlayersToTeams();
+        AssignFirstPlayerControlledFootballers();
     }
     
     private void AssignPlayersToTeams() {
@@ -34,6 +37,26 @@ public class MatchController : MonoBehaviour {
         }
     }
 
+    private void AssignFirstPlayerControlledFootballers() {
+        if (isTopTeamControlledByPlayer) {
+            foreach (GameObject player in topTeamPlayers) {
+                if (player.GetComponent<PlayerController>().enabled) {
+                    topTeamPlayerControlledFootballer = player;
+                }
+                break;
+            }
+        }
+
+        if (isBotTeamControlledByPlayer) {
+            foreach (GameObject player in botTeamPlayers) {
+                if (player.GetComponent<PlayerController>().enabled) {
+                    botTeamPlayerControlledFootballer = player;
+                }
+                break;
+            }
+        }
+    }
+    
     private void DisablePlayerControllers() {
         if (topTeamPlayerControlledFootballer) {
             topTeamPlayerControlledFootballer.GetComponent<PlayerController>().enabled = false;
@@ -41,6 +64,10 @@ public class MatchController : MonoBehaviour {
         if (botTeamPlayerControlledFootballer) {
             botTeamPlayerControlledFootballer.GetComponent<PlayerController>().enabled = false;
         }
+    }
+
+    private void EnablePlayerController(GameObject footballer) {
+        footballer.GetComponent<PlayerController>().enabled = true;
     }
     
     private void DisableFootballerMovementControllers(GameObject footballer) {
@@ -72,6 +99,10 @@ public class MatchController : MonoBehaviour {
             botTeamPlayerControlledFootballer.GetComponent<PlayerController>().enabled = true;
         }
     }
+
+    public List<GameObject> GetTeamPlayers(Team footballerTeam) {
+        return footballerTeam == Team.Top ? topTeamPlayers : botTeamPlayers;
+    }
     
     public List<GameObject> GetAllPlayers() {
         return allPlayers;
@@ -90,21 +121,34 @@ public class MatchController : MonoBehaviour {
     }
 
     public void SetupThrowIn(Vector3 position, Team ballForTeam) {
-        //tmp reverse
-        List<GameObject> allTeamPlayers = ballForTeam == Team.Bot ? topTeamPlayers : botTeamPlayers;
+        List<GameObject> allTeamPlayers = ballForTeam == Team.Top ? topTeamPlayers : botTeamPlayers;
         GameObject thrower = FootballHelpers.GetClosestTarget(position, allTeamPlayers);
         DisablePlayerControllers();
         thrower.GetComponent<BasicAI>().SetupThrowIn(position);
+        _ballController.OnFootballerPossessionExit();
         _ballController.SetNewBallPosition(position);
+        
+        // create event point so other footballers can't come to close
+        Instantiate(_eventPointPrefab, position, Quaternion.identity);
     }
 
     public void ThrowInReady(GameObject thrower, Team throwerTeam) {
-        if (throwerTeam == Team.Top && isTopTeamControlledByPlayer) {
-            
-        } else if (throwerTeam == Team.Bot && isBotTeamControlledByPlayer) {
-            
+        // if team doing throw in is controlled by player, gain control over thrower
+        if ((throwerTeam == Team.Top && isTopTeamControlledByPlayer) || (throwerTeam == Team.Bot && isBotTeamControlledByPlayer)) {
+            PlayerController playerController = thrower.GetComponent<PlayerController>();
+            thrower.GetComponent<BasicAI>().EventCompleted();
+            playerController.enabled = true;
+            playerController.EventType = FootballEventType.ThrowIn;
         } else {
             
+        }
+
+        // if team not throwing in is controlled by player, gain control over footballer closest to thrower
+        Team otherTeam = throwerTeam == Team.Top ? Team.Bot : Team.Top;
+        if ((otherTeam == Team.Top && isTopTeamControlledByPlayer) || (otherTeam == Team.Bot && isBotTeamControlledByPlayer)) {
+            List<GameObject> allTeamPlayers = otherTeam == Team.Top ? topTeamPlayers : botTeamPlayers;
+            GameObject closestFootballer = FootballHelpers.GetClosestTarget(thrower.transform.position, allTeamPlayers);
+            closestFootballer.GetComponent<PlayerController>().enabled = true;
         }
     }
 }
