@@ -97,7 +97,7 @@ public class BallController : MonoBehaviour {
     }
 
     public void OnFootballerPossessionExit() {
-        if (TeamInPossessionOfBall == Team.None) {
+        if (!_currentFootballerCollider) {
             return;
         }
         // after loss of possession ignore collisions between footballer and ball for short while
@@ -115,18 +115,9 @@ public class BallController : MonoBehaviour {
         // footballer is not in possession of ball
         _currentFootballerScript.HasBall = false;
         _currentFootballerCollider = null;
-
-        // no team possesses ball
-        teamInPossessionOfBall = Team.None;
     }
 
     public void SetNewBallPosition(Vector3 position) {
-        StartCoroutine(TeleportAfterDelay(position, 1f));
-    }
-
-    public IEnumerator TeleportAfterDelay(Vector3 position, float delayTime) {
-        yield return new WaitForSeconds(delayTime);
-        
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.rotation = Quaternion.Euler(Vector3.zero);
         _rigidbody.position = position;

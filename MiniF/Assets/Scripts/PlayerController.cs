@@ -3,8 +3,15 @@ using UnityEngine;
 
 [RequireComponent(typeof(Footballer))]
 public class PlayerController : MonoBehaviour {
-    private Footballer _footballer;
+    [SerializeField] private bool alternativeMovementKeys;
+    [SerializeField] private KeyCode shotKey = KeyCode.Comma;
+    [SerializeField] private KeyCode highPassKey = KeyCode.Period;
+    [SerializeField] private KeyCode lowPassKey = KeyCode.Slash;
     
+    private Footballer _footballer;
+    private MatchController _matchController;
+    private BallController _ballController;
+
     private Vector3 movement;
     private float actionPower;
 
@@ -16,19 +23,25 @@ public class PlayerController : MonoBehaviour {
     
     private void Awake() {
         _footballer = GetComponent<Footballer>();
+        _matchController = GameObject.FindWithTag("MatchController").GetComponent<MatchController>();
+        _ballController = GameObject.FindWithTag("Ball").GetComponent<BallController>();
     }
 
     private void Update() {
-        movement = new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), 0).normalized;
+        if (!alternativeMovementKeys) {
+            movement = new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), 0).normalized;
+        } else {
+            movement = new Vector3(Input.GetAxisRaw("Horizontal2"), Input.GetAxisRaw("Vertical2"), 0).normalized;
+        }
 
         if (eventType == FootballEventType.None) {
             if (_footballer.HasBall) {
-                if (Input.GetKey(KeyCode.C) || Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.Z)) {
+                if (Input.GetKey(lowPassKey) || Input.GetKey(highPassKey) || Input.GetKey(shotKey)) {
                     actionPower += 10f * Time.deltaTime;
                 }
 
                 // make ground pass
-                if (Input.GetKeyUp(KeyCode.C)) {
+                if (Input.GetKeyUp(lowPassKey)) {
                     GameObject teammate = _footballer.Pass(actionPower);
                     // transplant controller if there was a target for pass
                     if (teammate) {
@@ -39,7 +52,7 @@ public class PlayerController : MonoBehaviour {
                 }
 
                 // make high pass
-                if (Input.GetKeyUp(KeyCode.X)) {
+                if (Input.GetKeyUp(highPassKey)) {
                     GameObject teammate = _footballer.Pass(actionPower, 0.5f);
                     // transplant controller if there was a target for pass
                     if (teammate) {
@@ -50,7 +63,7 @@ public class PlayerController : MonoBehaviour {
                 }
 
                 // shot
-                if (Input.GetKeyUp(KeyCode.Z)) {
+                if (Input.GetKeyUp(shotKey)) {
                     Vector3 additionalDirection = Vector3.zero;
                     if (Input.GetKey(KeyCode.RightArrow)) {
                         additionalDirection = Vector3.right;
@@ -64,30 +77,69 @@ public class PlayerController : MonoBehaviour {
                 }
             }
             else {
-                if (Input.GetKeyUp(KeyCode.Z)) {
+                if (Input.GetKeyUp(shotKey)) {
                     ChangeWithoutBall();
                 }
 
-                if (Input.GetKeyUp(KeyCode.X)) {
+                if (Input.GetKeyUp(highPassKey)) {
                     _footballer.MakeSlideTackle();
                 }
             }
         } else if (eventType != FootballEventType.None) {
-            if (Input.GetKey(KeyCode.C) || Input.GetKey(KeyCode.X)) {
+            if (Input.GetKey(lowPassKey) || Input.GetKey(highPassKey)) {
                 actionPower += 10f * Time.deltaTime;
             }
             
             if (eventType == FootballEventType.ThrowIn) {
-                if (Input.GetKeyUp(KeyCode.X) || Input.GetKeyUp(KeyCode.Z)) {
+                if (Input.GetKeyUp(highPassKey) || Input.GetKeyUp(shotKey)) {
                     // Item1 contains information if ball was thrown, Item2 is target (if there was one)
                     Tuple<bool, GameObject> throwResult = _footballer.ThrowInPass(actionPower * 0.3f);
                     if (throwResult.Item1) {
                         eventType = FootballEventType.None;
+                        // throw happened, ball is in play
+                        _ballController.IsInPlay = true;
+                        
                         if (throwResult.Item2) {
                             TransplantController(throwResult.Item2);
                         }
                     }
                     actionPower = 0f;
+                }
+            } else if (eventType == FootballEventType.KickOffTaker) {
+                if (_footballer.HasBall) {
+                    if (Input.GetKey(lowPassKey) || Input.GetKey(highPassKey)) {
+                        actionPower += 10f * Time.deltaTime;
+                    }
+
+                    // make ground pass
+                    if (Input.GetKeyUp(lowPassKey)) {
+                        GameObject teammate = _footballer.Pass(actionPower * 0.5f);
+                        // transplant controller if there was a target for pass
+                        if (teammate) {
+                            TransplantController(teammate);
+                        }
+
+                        // return all players to their normal behaviour
+                        eventType = FootballEventType.None;
+                        _matchController.AllPlayersEventComplete();
+                        _ballController.IsInPlay = true;
+                        actionPower = 0f;
+                    }
+
+                    // make high pass
+                    if (Input.GetKeyUp(highPassKey)) {
+                        GameObject teammate = _footballer.Pass(actionPower * 0.5f, 0.5f);
+                        // transplant controller if there was a target for pass
+                        if (teammate) {
+                            TransplantController(teammate);
+                        }
+
+                        // return all players to their normal behaviour
+                        eventType = FootballEventType.None;
+                        _matchController.AllPlayersEventComplete();
+                        _ballController.IsInPlay = true;
+                        actionPower = 0f;
+                    }
                 }
             }
         }
@@ -100,6 +152,9 @@ public class PlayerController : MonoBehaviour {
                 break;
             case FootballEventType.ThrowIn:
                 _footballer.ThrowInBoundedRotate(movement);
+                break;
+            case FootballEventType.KickOffTaker:
+                _footballer.KickOffBoundedRotate(movement);
                 break;
         }
     }
@@ -117,7 +172,8 @@ public class PlayerController : MonoBehaviour {
     // enable PlayerController on teammate and disable this controller
     private void TransplantController(GameObject nextPlayer) {
         // let MatchController know which footballer is controlled by player
-        _footballer._MatchController.SetPlayerControlledFootballer(nextPlayer, _footballer.FootballerTeam);
+        _matchController.SetPlayerControlledFootballer(nextPlayer, _footballer.FootballerTeam);
+        enabled = false;
     }
 
     private void ChangeWithoutBall() {
@@ -163,14 +219,14 @@ public class PlayerController : MonoBehaviour {
 
         if (bound1 == Vector3.zero && bound2 == Vector3.zero) {
             GameObject teammate = FootballHelpers.GetClosestTarget(transform.position,
-                _footballer._MatchController.GetTeamPlayers(_footballer.FootballerTeam));
+                _matchController.GetTeamPlayers(_footballer.FootballerTeam));
             if (teammate) {
                 TransplantController(teammate);
             }
         }
         else {
             GameObject teammate = FootballHelpers.GetActionTargetPosition(transform.position, bound1, bound2,
-                _footballer._MatchController.GetTeamPlayers(_footballer.FootballerTeam));
+                _matchController.GetTeamPlayers(_footballer.FootballerTeam));
             if (teammate) {
                 TransplantController(teammate);
             }

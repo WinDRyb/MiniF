@@ -234,8 +234,30 @@ public class Footballer : MonoBehaviour {
         }
         
         GameObject target = Pass(power, 0.5f);
-        _ballController.IsInPlay = true;
         return new Tuple<bool, GameObject>(true, target);
+    }
+    
+    public void KickOffBoundedRotate(Vector3 direction) {
+        // get direction towards center of pitch
+        Vector3 goalDirection = _matchController.GetTeamGoalPosition(footballerTeam).y < 0f ? Vector3.down : Vector3.up;
+        // rotation bounds
+        Vector3 bound1 = Quaternion.Euler(0f, 0f, 75f) * goalDirection;
+        Vector3 bound2 = Quaternion.Euler(0f, 0f, -75f) * goalDirection;
+
+        float minX = Mathf.Min(bound1.x, bound2.x);
+        float maxX = Mathf.Max(bound1.x, bound2.x);
+
+        // don't rotate if there is no direction input and footballer rotation is in bounds
+        if (direction == Vector3.zero && Mathf.Sign(transform.right.y) == Mathf.Sign(goalDirection.y) && transform.right.x > minX && transform.right.x < maxX) {
+            return;
+        }
+        
+        // both bounds y are the same
+        direction.y = bound1.y;
+        // clamp direction before rotating
+        direction.x = Mathf.Clamp(direction.x, minX, maxX);
+        
+        RotateInDirection(direction);
     }
     
     IEnumerator DisableImmobilization(float delayTime) {

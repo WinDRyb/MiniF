@@ -1,4 +1,7 @@
 public enum FootballEventType {
     None,
-    ThrowIn
+    Wait,
+    ThrowIn,
+    KickOff,
+    KickOffTaker
 }

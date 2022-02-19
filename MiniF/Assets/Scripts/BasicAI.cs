@@ -13,6 +13,7 @@ public class BasicAI : MonoBehaviour {
 
     // footballer position when ball is in the middle of pitch
     [SerializeField] protected Vector3 defaultPosition;
+    public Vector3 DefaultPosition => defaultPosition;
     // how far right can footballer go (x), how far towards opponent goal can footballer go (y)
     [SerializeField] protected Vector3 maxForwardPosition;
     // how far left can footballer go (x), how close to team goal can footballer go (y)
@@ -22,10 +23,8 @@ public class BasicAI : MonoBehaviour {
 
     protected FootballEventType eventType = FootballEventType.None;
 
-    public FootballEventType EventType {
-        get { return eventType; }
-    }
-    
+    public FootballEventType EventType => eventType;
+
     protected Vector3 eventPositionTarget;
     
     protected virtual void Awake() {
@@ -46,8 +45,8 @@ public class BasicAI : MonoBehaviour {
             case FootballEventType.None:
                 Move();
                 break;
-            case FootballEventType.ThrowIn:
-                MoveToThrowIn(eventPositionTarget);
+            case FootballEventType.ThrowIn: case FootballEventType.KickOff: case FootballEventType.KickOffTaker:
+                MoveToEventPosition(eventPositionTarget);
                 break;
         }
     }
@@ -77,10 +76,14 @@ public class BasicAI : MonoBehaviour {
             Vector3 direction = _ballTransform.position.y >= defaultPosition.y
                 ? (maxForwardPosition - maxBackwardPosition).normalized
                 : (maxBackwardPosition - maxForwardPosition).normalized;
-            
+
+            if (_footballerScript.FootballerTeam == Team.Top) {
+                direction *= -1;
+            }
+
             // calculate position of footballer for current ball position
             float y = ((Mathf.Abs(_ballTransform.position.y - defaultPosition.y) / 2f) * direction.y) + defaultPosition.y;
-
+            
             // clamp position with forward and backward limits
             y = maxForwardPosition.y > maxBackwardPosition.y
                 ? Mathf.Clamp(y, maxBackwardPosition.y, maxForwardPosition.y)
@@ -91,22 +94,35 @@ public class BasicAI : MonoBehaviour {
         }
     }
 
-    protected virtual void MoveToThrowIn(Vector3 throwInPosition) {
-        _footballerScript.MoveInDirection((throwInPosition - transform.position).normalized);
-        if (Vector3.Distance(transform.position, throwInPosition) < 0.1f) {
-            ThrowInReady();
+
+    protected virtual bool MoveToPosition(Vector3 position) {
+        _footballerScript.MoveInDirection((position - transform.position).normalized);
+        if (Vector3.Distance(transform.position, position) < 0.1f) {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected virtual void MoveToEventPosition(Vector3 eventPosition) {
+        if (MoveToPosition(eventPosition)) {
+            EventReady();
+            // don't do anything
+            if (eventType == FootballEventType.KickOff) {
+                eventType = FootballEventType.Wait;   
+            }
         }
     }
+    
+    public virtual void SetupEvent(FootballEventType footballEventType, Vector3 eventPosition) {
+        eventType = footballEventType;
+        eventPositionTarget = eventPosition;
+    }
 
-    public virtual void SetupThrowIn(Vector3 throwInPosition) {
-        eventType = FootballEventType.ThrowIn;
-        eventPositionTarget = throwInPosition;
+    public virtual void EventReady() {
+        _matchController.EventReady(eventType, gameObject, _footballerScript.FootballerTeam);
     }
     
-    protected virtual void ThrowInReady() {
-        _matchController.ThrowInReady(gameObject, _footballerScript.FootballerTeam);
-    }
-
     public virtual void EventCompleted() {
         eventType = FootballEventType.None;
     }
