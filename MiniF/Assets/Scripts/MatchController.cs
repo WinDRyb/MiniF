@@ -131,8 +131,8 @@ public class MatchController : MonoBehaviour {
         DisablePlayerControllers();
         _ballController.OnFootballerPossessionExit();
         switch (eventType) {
-            case FootballEventType.ThrowIn:
-                SetupThrowIn(position, ballForTeam);
+            case FootballEventType.ThrowIn: case FootballEventType.GoalkeeperKickOff: case FootballEventType.Corner:
+                SetupSinglePlayerEvent(eventType, position, ballForTeam);
                 break;
             case FootballEventType.KickOff:
                 Vector3 kickOffTakerPosition = ballForTeam == Team.Top ? Vector3.down * 0.05f : Vector3.up * 0.05f;
@@ -143,8 +143,8 @@ public class MatchController : MonoBehaviour {
 
     public void EventReady(FootballEventType eventType, GameObject footballer, Team footballerTeam) {
         switch (eventType) {
-            case FootballEventType.ThrowIn:
-                ThrowInReady(footballer, footballerTeam);
+            case FootballEventType.ThrowIn: case FootballEventType.GoalkeeperKickOff: case FootballEventType.Corner:
+                SetupSinglePlayerReady(eventType, footballer, footballerTeam);
                 break;
             case FootballEventType.KickOff: case FootballEventType.KickOffTaker:
                 KickOffReady();
@@ -179,11 +179,11 @@ public class MatchController : MonoBehaviour {
             SetPlayerControlledFootballer(closestFootballer, otherTeam);
         }
     }
-    
-    private void SetupThrowIn(Vector3 position, Team ballForTeam) {
+
+    private void SetupSinglePlayerEvent(FootballEventType eventType, Vector3 position, Team ballForTeam) {
         List<GameObject> allTeamPlayers = GetTeamPlayers(ballForTeam);
-        GameObject thrower = FootballHelpers.GetClosestTarget(position, allTeamPlayers);
-        thrower.GetComponent<BasicAI>().SetupEvent(FootballEventType.ThrowIn, position);
+        GameObject taker = FootballHelpers.GetClosestTarget(position, allTeamPlayers);
+        taker.GetComponent<BasicAI>().SetupEvent(eventType, position);
         // position ball at throw in position after delay
         StartCoroutine(SetBallPositionAfterDelay(position, 1f));
 
@@ -191,8 +191,8 @@ public class MatchController : MonoBehaviour {
         Instantiate(_eventPointPrefab, position, Quaternion.identity);
     }
     
-    private void ThrowInReady(GameObject thrower, Team throwerTeam) {
-        ApplyEventControllers(FootballEventType.ThrowIn, thrower, throwerTeam);
+    private void SetupSinglePlayerReady(FootballEventType eventType, GameObject taker, Team takerTeam) {
+        ApplyEventControllers(eventType, taker, takerTeam);
     }
 
     private void SetupKickOff(Vector3 position, Team ballForTeam) {

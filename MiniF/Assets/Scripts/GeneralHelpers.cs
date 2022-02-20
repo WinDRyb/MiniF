@@ -14,4 +14,15 @@ public static class GeneralHelpers {
             return false;
         }
     }
+
+    //TODO: needs more testing
+    public static bool IsVectorBetweenBounds(Vector3 vector, Vector3 bound1, Vector3 bound2) {
+        float angleArea = Vector3.Angle(bound1, bound2);
+
+        if (Vector3.Angle(bound1, vector) < angleArea && Vector3.Angle(bound2, vector) < angleArea) {
+            return true;
+        }
+
+        return false;
+    }
 }

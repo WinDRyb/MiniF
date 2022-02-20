@@ -26,6 +26,7 @@ public class BasicAI : MonoBehaviour {
     public FootballEventType EventType => eventType;
 
     protected Vector3 eventPositionTarget;
+    protected bool isOnEventPosition;
     
     protected virtual void Awake() {
         _footballerScript = GetComponent<Footballer>();
@@ -45,7 +46,8 @@ public class BasicAI : MonoBehaviour {
             case FootballEventType.None:
                 Move();
                 break;
-            case FootballEventType.ThrowIn: case FootballEventType.KickOff: case FootballEventType.KickOffTaker:
+            case FootballEventType.ThrowIn: case FootballEventType.KickOff: case FootballEventType.KickOffTaker: case FootballEventType.GoalkeeperKickOff: 
+            case FootballEventType.Corner:
                 MoveToEventPosition(eventPositionTarget);
                 break;
         }
@@ -105,12 +107,8 @@ public class BasicAI : MonoBehaviour {
     }
 
     protected virtual void MoveToEventPosition(Vector3 eventPosition) {
-        if (MoveToPosition(eventPosition)) {
+        if (MoveToPosition(eventPosition) && !isOnEventPosition) {
             EventReady();
-            // don't do anything
-            if (eventType == FootballEventType.KickOff) {
-                eventType = FootballEventType.Wait;   
-            }
         }
     }
     
@@ -121,10 +119,12 @@ public class BasicAI : MonoBehaviour {
 
     public virtual void EventReady() {
         _matchController.EventReady(eventType, gameObject, _footballerScript.FootballerTeam);
+        isOnEventPosition = true;
     }
     
     public virtual void EventCompleted() {
         eventType = FootballEventType.None;
+        isOnEventPosition = false;
     }
     
     private void OnDrawGizmos() {

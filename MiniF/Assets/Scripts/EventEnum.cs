@@ -3,5 +3,8 @@ public enum FootballEventType {
     Wait,
     ThrowIn,
     KickOff,
-    KickOffTaker
+    KickOffTaker,
+    Corner,
+    CornerTaker,
+    GoalkeeperKickOff
 }

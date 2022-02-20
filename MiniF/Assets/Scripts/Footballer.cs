@@ -53,7 +53,7 @@ public class Footballer : MonoBehaviour {
             _rigidbody.MoveRotation(targetRotation);
         }
     }
-    
+
     public void MoveTo(Vector3 targetPosition, float power) {
         Vector3 velocity = (targetPosition - transform.position) * power;
         _rigidbody.velocity = velocity;
@@ -224,6 +224,65 @@ public class Footballer : MonoBehaviour {
         
         RotateInDirection(direction);
     }
+    
+    public void KickOffBoundedRotate(Vector3 direction, Vector3 defaultDirection) {
+        // rotation bounds
+        Vector3 bound1 = Quaternion.Euler(0f, 0f, 75f) * defaultDirection;
+        Vector3 bound2 = Quaternion.Euler(0f, 0f, -75f) * defaultDirection;
+
+        float minX = Mathf.Min(bound1.x, bound2.x);
+        float maxX = Mathf.Max(bound1.x, bound2.x);
+
+        // don't rotate if there is no direction input and footballer rotation is in bounds
+        if (direction == Vector3.zero && Mathf.Sign(transform.right.y) == Mathf.Sign(defaultDirection.y) && transform.right.x > minX && transform.right.x < maxX) {
+            return;
+        }
+        
+        // both bounds y are the same
+        direction.y = bound1.y;
+        // clamp direction before rotating
+        direction.x = Mathf.Clamp(direction.x, minX, maxX);
+        
+        RotateInDirection(direction);
+    }
+    
+    public void CornerBoundedRotate(Vector3 direction) {
+        Vector3 defaultDirection;
+
+        if (transform.position.x < 0f) {
+            if (transform.position.y < 0f) {
+                defaultDirection = new Vector3(0.5f, 0.5f, 0f);
+            } else {
+                defaultDirection = new Vector3(0.5f, -0.5f, 0f);
+            }
+        } else {
+            if (transform.position.y < 0f) {
+                defaultDirection = new Vector3(-0.5f, 0.5f, 0f);
+            } else {
+                defaultDirection = new Vector3(-0.5f, -0.5f, 0f);
+            }
+        }
+        
+        // rotation bounds
+        Vector3 bound1 = Quaternion.Euler(0f, 0f, 45f) * defaultDirection;
+        Vector3 bound2 = Quaternion.Euler(0f, 0f, -45f) * defaultDirection;
+
+        float minX = Mathf.Min(bound1.x, bound2.x);
+        float maxX = Mathf.Max(bound1.x, bound2.x);
+        float minY = Mathf.Min(bound1.y, bound2.y);
+        float maxY = Mathf.Max(bound1.y, bound2.y);
+        
+        if (!GeneralHelpers.IsVectorBetweenBounds(transform.right, bound1, bound2)) {
+            RotateInDirection(defaultDirection);
+            return;
+        }
+
+        // clamp direction before rotating
+        direction.x = Mathf.Clamp(direction.x, minX, maxX);
+        direction.y = Mathf.Clamp(direction.y, minY, maxY);
+
+        RotateInDirection(direction);
+    }
 
     // first returned value is true if ball was thrown, false otherwise; second value is target to which ball was thrown, null if there was none
     public Tuple<bool, GameObject> ThrowInPass(float power) {
@@ -236,30 +295,7 @@ public class Footballer : MonoBehaviour {
         GameObject target = Pass(power, 0.5f);
         return new Tuple<bool, GameObject>(true, target);
     }
-    
-    public void KickOffBoundedRotate(Vector3 direction) {
-        // get direction towards center of pitch
-        Vector3 goalDirection = _matchController.GetTeamGoalPosition(footballerTeam).y < 0f ? Vector3.down : Vector3.up;
-        // rotation bounds
-        Vector3 bound1 = Quaternion.Euler(0f, 0f, 75f) * goalDirection;
-        Vector3 bound2 = Quaternion.Euler(0f, 0f, -75f) * goalDirection;
 
-        float minX = Mathf.Min(bound1.x, bound2.x);
-        float maxX = Mathf.Max(bound1.x, bound2.x);
-
-        // don't rotate if there is no direction input and footballer rotation is in bounds
-        if (direction == Vector3.zero && Mathf.Sign(transform.right.y) == Mathf.Sign(goalDirection.y) && transform.right.x > minX && transform.right.x < maxX) {
-            return;
-        }
-        
-        // both bounds y are the same
-        direction.y = bound1.y;
-        // clamp direction before rotating
-        direction.x = Mathf.Clamp(direction.x, minX, maxX);
-        
-        RotateInDirection(direction);
-    }
-    
     IEnumerator DisableImmobilization(float delayTime) {
         yield return new WaitForSeconds(delayTime);
         isImmobilized = false;

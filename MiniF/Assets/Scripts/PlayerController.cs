@@ -96,16 +96,16 @@ public class PlayerController : MonoBehaviour {
                     Tuple<bool, GameObject> throwResult = _footballer.ThrowInPass(actionPower * 0.3f);
                     if (throwResult.Item1) {
                         eventType = FootballEventType.None;
+                        _matchController.AllPlayersEventComplete();
                         // throw happened, ball is in play
                         _ballController.IsInPlay = true;
-                        
                         if (throwResult.Item2) {
                             TransplantController(throwResult.Item2);
                         }
                     }
                     actionPower = 0f;
                 }
-            } else if (eventType == FootballEventType.KickOffTaker) {
+            } else if (eventType == FootballEventType.KickOffTaker || eventType == FootballEventType.GoalkeeperKickOff || eventType == FootballEventType.Corner) {
                 if (_footballer.HasBall) {
                     if (Input.GetKey(lowPassKey) || Input.GetKey(highPassKey)) {
                         actionPower += 10f * Time.deltaTime;
@@ -154,7 +154,15 @@ public class PlayerController : MonoBehaviour {
                 _footballer.ThrowInBoundedRotate(movement);
                 break;
             case FootballEventType.KickOffTaker:
-                _footballer.KickOffBoundedRotate(movement);
+                // get direction towards own goal
+                _footballer.KickOffBoundedRotate(movement, _matchController.GetTeamGoalPosition(_footballer.FootballerTeam).y < 0f ? Vector3.down : Vector3.up);
+                break;
+            case FootballEventType.GoalkeeperKickOff:
+                // get direction towards opponent goal
+                _footballer.KickOffBoundedRotate(movement, _matchController.GetTeamGoalPosition(_footballer.FootballerTeam).y < 0f ? Vector3.up : Vector3.down);
+                break;
+            case FootballEventType.Corner:
+                _footballer.CornerBoundedRotate(movement);
                 break;
         }
     }
