@@ -58,15 +58,16 @@ public class BasicAI : MonoBehaviour {
         if (ballControlZone.Contains(_ballTransform.position) && _ballController.TeamInPossessionOfBall != _footballerScript.FootballerTeam) {
             // seize ball control if no one controls it
             if (_ballController.TeamInPossessionOfBall == Team.None) {
-                _footballerScript.MoveInDirection((_ballTransform.position - transform.position).normalized);
+                _footballerScript.MoveInDirectionWithDistanceCheck((_ballTransform.position - transform.position).normalized, _ballTransform.position, 0.1f);
             }
             // if opponent has ball, move to block path to team goal
             else {
                 Vector3 offsetTowardsTeamGoal = _footballerScript.FootballerTeam == Team.Top
                     ? (_topGoalTransform.position - _ballTransform.position).normalized * 1.5f
                     : (_botGoalTransform.position - _ballTransform.position).normalized * 1.5f;
-                
-                _footballerScript.MoveInDirection((_ballTransform.position + offsetTowardsTeamGoal - transform.position).normalized);
+
+                Vector3 targetPosition = _ballTransform.position + offsetTowardsTeamGoal;
+                _footballerScript.MoveInDirectionWithDistanceCheck((targetPosition - transform.position).normalized, targetPosition, 0.1f);
             }
         } 
         // ball is not in control zone
@@ -92,14 +93,14 @@ public class BasicAI : MonoBehaviour {
                 : Mathf.Clamp(y, maxForwardPosition.y, maxBackwardPosition.y);
 
             Vector3 targetPosition = new Vector3(x, y, 0f);
-            _footballerScript.MoveInDirection((targetPosition - transform.position).normalized);
+            _footballerScript.MoveInDirectionWithDistanceCheck((targetPosition - transform.position).normalized, targetPosition, 0.1f);
         }
     }
 
 
     protected virtual bool MoveToPosition(Vector3 position) {
-        _footballerScript.MoveInDirection((position - transform.position).normalized);
-        if (Vector3.Distance(transform.position, position) < 0.1f) {
+        bool closeEnough = _footballerScript.MoveInDirectionWithDistanceCheck((position - transform.position).normalized, position, 0.1f);
+        if (closeEnough) {
             return true;
         }
 

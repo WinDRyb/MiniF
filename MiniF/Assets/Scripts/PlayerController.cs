@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour {
     private Footballer _footballer;
     private MatchController _matchController;
     private BallController _ballController;
+    private ParticleSystem _particleSystem;
 
     private Vector3 movement;
     private float actionPower;
@@ -25,6 +26,7 @@ public class PlayerController : MonoBehaviour {
         _footballer = GetComponent<Footballer>();
         _matchController = GameObject.FindWithTag("MatchController").GetComponent<MatchController>();
         _ballController = GameObject.FindWithTag("Ball").GetComponent<BallController>();
+        _particleSystem = GetComponentInChildren<ParticleSystem>();
     }
 
     private void Update() {
@@ -72,7 +74,7 @@ public class PlayerController : MonoBehaviour {
                         additionalDirection = Vector3.left;
                     }
 
-                    _footballer.Shot(additionalDirection, actionPower, 0.3f);
+                    _footballer.Shot(additionalDirection, actionPower, 0.2f, 0.5f);
                     actionPower = 0f;
                 }
             }
@@ -93,7 +95,7 @@ public class PlayerController : MonoBehaviour {
             if (eventType == FootballEventType.ThrowIn) {
                 if (Input.GetKeyUp(highPassKey) || Input.GetKeyUp(shotKey)) {
                     // Item1 contains information if ball was thrown, Item2 is target (if there was one)
-                    Tuple<bool, GameObject> throwResult = _footballer.ThrowInPass(actionPower * 0.3f);
+                    Tuple<bool, GameObject> throwResult = _footballer.ThrowInPass(actionPower * 0.5f);
                     if (throwResult.Item1) {
                         eventType = FootballEventType.None;
                         _matchController.AllPlayersEventComplete();
@@ -170,11 +172,15 @@ public class PlayerController : MonoBehaviour {
     private void OnEnable() {
         // deactivate AI behaviour of footballer
         GetComponent<BasicAI>().enabled = false;
+        // enable ring particles when player starts to control footballer
+        _particleSystem.Play();
     }
     
     private void OnDisable() {
         // activate AI behaviour of footballer
         GetComponent<BasicAI>().enabled = true;
+        // disable ring particles if footballer is no longer controlled by player
+        _particleSystem.Stop();
     }
 
     // enable PlayerController on teammate and disable this controller

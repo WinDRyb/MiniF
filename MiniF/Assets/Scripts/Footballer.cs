@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(FootballerStats))]
@@ -75,16 +76,37 @@ public class Footballer : MonoBehaviour {
         }
         
         if (hasBall) {
-            //_rigidbody.MovePosition(transform.position + direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed * _footballerStats.MovementWithBallSlow);
             _rigidbody.velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed * _footballerStats.MovementWithBallSlow;
-        }
-        else {
-            //_rigidbody.MovePosition(transform.position + direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed);
+        } else {
             _rigidbody.velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed;
         }
 
         // rotate in movement direction
         RotateInDirection(direction);
+    }
+
+    // returns true if footballer is within epsilon distance
+    public bool MoveInDirectionWithDistanceCheck(Vector3 direction, Vector3 targetPosition, float epsilon) {
+        // don't do anything if is close enough to target
+        if (Vector3.Distance(transform.position, targetPosition) < epsilon) {
+            _rigidbody.velocity = Vector3.zero;
+            return true;
+        }
+
+        // don't do anything if footballer is immobilized
+        if (isImmobilized) {
+            return false;
+        }
+        
+        if (hasBall) {
+            _rigidbody.velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed * _footballerStats.MovementWithBallSlow;
+        } else {
+            _rigidbody.velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed;
+        }
+
+        // rotate in movement direction
+        RotateInDirection(direction);
+        return false;
     }
 
     // used by EventMovementController, returns footballer position
@@ -122,6 +144,9 @@ public class Footballer : MonoBehaviour {
         
         // set how high will ball go
         direction.z = zVelocity;
+        
+        // normalize again this time including z direction
+        direction = direction.normalized;
 
         float inaccuracy = UnityEngine.Random.Range(0f, 15f - _footballerStats.PassInaccuracy) * GeneralHelpers.RandomSign();
         direction = Quaternion.Euler(0f, 0f, inaccuracy) * direction;
@@ -134,7 +159,7 @@ public class Footballer : MonoBehaviour {
         return target;
     }
 
-    public void Shot(Vector3 additionalDirection, float power, float zVelocity = 0f) {
+    public void Shot(Vector3 additionalDirection, float power, float minZVelocity = 0f, float maxZVelocity = 0f) {
         if (!hasBall) {
             return;
         }
@@ -157,11 +182,13 @@ public class Footballer : MonoBehaviour {
         if (Vector3.Angle(transform.right, targetPosition) > 85f) {
             inaccuracy *= 3f;
         }
-        
-        targetVector.z = zVelocity;
-        
+
+        targetVector.z = Random.Range(minZVelocity, maxZVelocity);
+
+        // normalize again this time including z direction
+        targetVector = targetVector.normalized;
+
         targetVector = Quaternion.Euler(0f, 0f, inaccuracy) * targetVector;
-        
         // clamp power with footballer stats
         power = Mathf.Clamp(power, 3f, _footballerStats.MaxActionPower);
 
@@ -251,21 +278,21 @@ public class Footballer : MonoBehaviour {
 
         if (transform.position.x < 0f) {
             if (transform.position.y < 0f) {
-                defaultDirection = new Vector3(0.5f, 0.5f, 0f);
+                defaultDirection = new Vector3(1f, 1f, 0f).normalized;
             } else {
-                defaultDirection = new Vector3(0.5f, -0.5f, 0f);
+                defaultDirection = new Vector3(1f, -1f, 0f).normalized;
             }
         } else {
             if (transform.position.y < 0f) {
-                defaultDirection = new Vector3(-0.5f, 0.5f, 0f);
+                defaultDirection = new Vector3(-1f, 1f, 0f).normalized;
             } else {
-                defaultDirection = new Vector3(-0.5f, -0.5f, 0f);
+                defaultDirection = new Vector3(-1f, -1f, 0f).normalized;
             }
         }
         
         // rotation bounds
-        Vector3 bound1 = Quaternion.Euler(0f, 0f, 45f) * defaultDirection;
-        Vector3 bound2 = Quaternion.Euler(0f, 0f, -45f) * defaultDirection;
+        Vector3 bound1 = Quaternion.Euler(0f, 0f, 50f) * defaultDirection;
+        Vector3 bound2 = Quaternion.Euler(0f, 0f, -50f) * defaultDirection;
 
         float minX = Mathf.Min(bound1.x, bound2.x);
         float maxX = Mathf.Max(bound1.x, bound2.x);
