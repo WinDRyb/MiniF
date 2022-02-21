@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class MatchController : MonoBehaviour {
     [SerializeField] private GameObject _eventPointPrefab;
@@ -28,6 +29,10 @@ public class MatchController : MonoBehaviour {
     private void Start() {
         AssignPlayersToTeams();
         AssignFirstPlayerControlledFootballers();
+        
+        // at beginning setup kick off for random team
+        Team ballForTeam = GeneralHelpers.RandomSign() == 1 ? Team.Top : Team.Bot;
+        SetupEvent(FootballEventType.KickOff, Vector3.zero, ballForTeam);
     }
     
     private void AssignPlayersToTeams() {
