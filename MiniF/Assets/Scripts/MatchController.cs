@@ -204,7 +204,7 @@ public class MatchController : MonoBehaviour {
             }
 
             BasicAI footballerAIScript = footballer.GetComponent<BasicAI>();
-            footballerAIScript.SetupEvent(FootballEventType.KickOff, footballerAIScript.DefaultPosition);
+            footballerAIScript.SetupEvent(FootballEventType.KickOff, footballerAIScript.ResetPosition);
         }
         
         //Instantiate(_eventPointPrefab, Vector3.zero, Quaternion.identity);

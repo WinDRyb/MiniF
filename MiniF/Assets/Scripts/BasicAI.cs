@@ -11,9 +11,12 @@ public class BasicAI : MonoBehaviour {
     protected Transform _botGoalTransform;
     protected MatchController _matchController;
 
+
+    // footballer position during kick off
+    [SerializeField] protected Vector3 resetPosition;
+    public Vector3 ResetPosition => resetPosition;
     // footballer position when ball is in the middle of pitch
     [SerializeField] protected Vector3 defaultPosition;
-    public Vector3 DefaultPosition => defaultPosition;
     // how far right can footballer go (x), how far towards opponent goal can footballer go (y)
     [SerializeField] protected Vector3 maxForwardPosition;
     // how far left can footballer go (x), how close to team goal can footballer go (y)

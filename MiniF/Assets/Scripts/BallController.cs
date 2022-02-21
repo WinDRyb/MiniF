@@ -17,12 +17,18 @@ public class BallController : MonoBehaviour {
     public bool IsInPlay {
         get { return isInPlay; }
         set { isInPlay = value; }
-    } 
-    
+    }
+
     private Team teamInPossessionOfBall = Team.None;
     public Team TeamInPossessionOfBall {
         get { return teamInPossessionOfBall; }
         set { teamInPossessionOfBall = value; }
+    } 
+    
+    private Team lastTeamInPossessionOfBall = Team.None;
+    public Team LastTeamInPossessionOfBall {
+        get { return lastTeamInPossessionOfBall; }
+        set { lastTeamInPossessionOfBall = value; }
     } 
     
     private void Awake() {
@@ -77,7 +83,7 @@ public class BallController : MonoBehaviour {
         repairJointAnchor = true;
 
         // lower mass of ball so it doesn't make footballer move slower
-        _rigidbody.mass = 0.01f;
+        _rigidbody.mass = 1f;
 
         // let footballer know that he is in possession of ball now
         _currentFootballerScript = footballer.GetComponent<Footballer>();
@@ -86,10 +92,11 @@ public class BallController : MonoBehaviour {
 
         // set team in possession of ball
         teamInPossessionOfBall = _currentFootballerScript.FootballerTeam;
+        lastTeamInPossessionOfBall = _currentFootballerScript.FootballerTeam;
         
         // change player controlled footballer when ai controlled teammate captured ball
         if (isInPlay) {
-            _matchController.SetPlayerControlledFootballer(footballer, teamInPossessionOfBall);
+            _matchController.SetPlayerControlledFootballer(footballer, lastTeamInPossessionOfBall);
         }
 
         // disable collision so HingeJoint can be corrected
@@ -111,6 +118,8 @@ public class BallController : MonoBehaviour {
         Destroy(_hingeJoint);
         // set back normal ball mass
         _rigidbody.mass = ballMass;
+        
+        teamInPossessionOfBall = Team.None;
 
         // footballer is not in possession of ball
         _currentFootballerScript.HasBall = false;
