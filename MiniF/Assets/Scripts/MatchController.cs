@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class MatchController : MonoBehaviour {
     [SerializeField] private GameObject _eventPointPrefab;
@@ -73,10 +71,6 @@ public class MatchController : MonoBehaviour {
         }
     }
 
-    private Team GetOtherTeam(Team team) {
-        return team == Team.Top ? Team.Bot : Team.Top;
-    }
-    
     public void SetPlayerControlledFootballer(GameObject footballer, Team footballerTeam) {
         if (isTopTeamControlledByPlayer && footballerTeam == Team.Top) {
             if (topTeamPlayerControlledFootballer) {
@@ -176,7 +170,7 @@ public class MatchController : MonoBehaviour {
         }
 
         // if team waiting for event completion is controlled by player, gain control over footballer closest to event taker
-        Team otherTeam = GetOtherTeam(eventTakerTeam);
+        Team otherTeam = FootballHelpers.GetOtherTeam(eventTakerTeam);
         if ((otherTeam == Team.Top && isTopTeamControlledByPlayer) || (otherTeam == Team.Bot && isBotTeamControlledByPlayer)) {
             List<GameObject> allTeamPlayers = GetTeamPlayers(otherTeam);
             GameObject closestFootballer = FootballHelpers.GetClosestTarget(eventTaker.transform.position, allTeamPlayers);
@@ -193,7 +187,10 @@ public class MatchController : MonoBehaviour {
         StartCoroutine(SetBallPositionAfterDelay(position, 1f));
 
         // create event point so other footballers can't come to close
-        Instantiate(_eventPointPrefab, position, Quaternion.identity);
+        GameObject eventPoint = Instantiate(_eventPointPrefab, position, Quaternion.identity);
+        if (eventType == FootballEventType.Corner) {
+            eventPoint.transform.localScale = Vector3.one * 3f;
+        }
     }
     
     private void SetupSinglePlayerReady(FootballEventType eventType, GameObject taker, Team takerTeam) {

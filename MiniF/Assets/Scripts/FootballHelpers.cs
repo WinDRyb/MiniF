@@ -77,4 +77,8 @@ public static class FootballHelpers {
 
         return closestTarget;
     }
+
+    public static Team GetOtherTeam(Team team) {
+        return team == Team.Top ? Team.Bot : Team.Top;
+    }
 }

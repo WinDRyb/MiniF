@@ -6,7 +6,7 @@ public class FootballerStats : MonoBehaviour {
     [Range(450f, 550f), SerializeField] private float rotationSpeed = 500f;
     [Range(1.5f, 2.5f), SerializeField] private float slideTackleSpeed = 2f;
 
-    [Range(7f, 10f), SerializeField] private float maxActionPower = 9f;
+    [Range(7f, 9f), SerializeField] private float maxActionPower = 8f;
     [Range(1f, 15f), SerializeField] private float passInaccuracy = 10f;
     [Range(1f, 15f), SerializeField] private float shotInaccuracy = 10f;
 
@@ -49,7 +49,7 @@ public class FootballerStats : MonoBehaviour {
     public float MaxActionPower {
         get { return maxActionPower; }
         set {
-            if (value >= 7f && value <= 10f) {
+            if (value >= 7f && value <= 9f) {
                 maxActionPower = value;
             }
         }

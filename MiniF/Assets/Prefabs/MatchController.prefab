@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4951854131853086479}
   - component: {fileID: 779612639177380697}
+  - component: {fileID: 8687844564468060582}
   m_Layer: 0
   m_Name: MatchController
   m_TagString: MatchController
@@ -51,3 +52,15 @@ MonoBehaviour:
   allPlayers: []
   topTeamPlayers: []
   botTeamPlayers: []
+--- !u!114 &8687844564468060582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7085141005509132658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 356bb71729e490942b0fa01315acd078, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

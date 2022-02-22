@@ -179,7 +179,7 @@ MonoBehaviour:
   movementWithBallSlow: 0.88
   rotationSpeed: 500
   slideTackleSpeed: 2
-  maxActionPower: 9
+  maxActionPower: 8
   passInaccuracy: 10
   shotInaccuracy: 10
 --- !u!114 &5985545601038624877
@@ -206,6 +206,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a941f11351d84447a3846aa573e8745, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  resetPosition: {x: 0, y: 0, z: 0}
   defaultPosition: {x: 0, y: 0, z: 0}
   maxForwardPosition: {x: 0, y: 0, z: 0}
   maxBackwardPosition: {x: 0, y: 0, z: 0}
