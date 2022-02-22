@@ -9,7 +9,6 @@ public class BallController : MonoBehaviour {
     private Footballer _currentFootballerScript;
     private MatchController _matchController;
     
-    private float ballMass;
     private bool repairJointAnchor;
     private Vector3 frontAnchorPoint = Vector3.right * 0.3f;
 
@@ -35,8 +34,6 @@ public class BallController : MonoBehaviour {
         _rigidbody = GetComponent<Rigidbody>();
         _collider = GetComponent<SphereCollider>();
         _matchController = GameObject.FindWithTag("MatchController").GetComponent<MatchController>();
-        
-        ballMass = _rigidbody.mass;
     }
 
     private void OnCollisionEnter(Collision collision) {
@@ -82,9 +79,6 @@ public class BallController : MonoBehaviour {
         _hingeJoint.autoConfigureConnectedAnchor = false;
         repairJointAnchor = true;
 
-        // lower mass of ball so it doesn't make footballer move slower
-        _rigidbody.mass = 1f;
-
         // let footballer know that he is in possession of ball now
         _currentFootballerScript = footballer.GetComponent<Footballer>();
         _currentFootballerScript.HasBall = true;
@@ -116,9 +110,7 @@ public class BallController : MonoBehaviour {
         repairJointAnchor = false;
         // remove HingeJoint
         Destroy(_hingeJoint);
-        // set back normal ball mass
-        _rigidbody.mass = ballMass;
-        
+
         teamInPossessionOfBall = Team.None;
 
         // footballer is not in possession of ball

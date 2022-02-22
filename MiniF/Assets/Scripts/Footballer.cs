@@ -76,9 +76,13 @@ public class Footballer : MonoBehaviour {
         }
         
         if (hasBall) {
-            _rigidbody.velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed * _footballerStats.MovementWithBallSlow;
+            Vector3 velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed * _footballerStats.MovementWithBallSlow;
+            velocity.z = _rigidbody.velocity.z;
+            _rigidbody.velocity = velocity;
         } else {
-            _rigidbody.velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed;
+            Vector3 velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed;
+            velocity.z = _rigidbody.velocity.z;
+            _rigidbody.velocity = velocity;
         }
 
         // rotate in movement direction
@@ -99,9 +103,13 @@ public class Footballer : MonoBehaviour {
         }
         
         if (hasBall) {
-            _rigidbody.velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed * _footballerStats.MovementWithBallSlow;
+            Vector3 velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed * _footballerStats.MovementWithBallSlow;
+            velocity.z = _rigidbody.velocity.z;
+            _rigidbody.velocity = velocity;
         } else {
-            _rigidbody.velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed;
+            Vector3 velocity = direction * Time.fixedDeltaTime * _footballerStats.MovementSpeed;
+            velocity.z = _rigidbody.velocity.z;
+            _rigidbody.velocity = velocity;
         }
 
         // rotate in movement direction
