@@ -166,7 +166,7 @@ public class MatchController : MonoBehaviour {
             //playerController.enabled = true;
             playerController.EventType = eventType;
         } else {
-            
+            // ai script
         }
 
         // if team waiting for event completion is controlled by player, gain control over footballer closest to event taker

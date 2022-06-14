@@ -8,9 +8,6 @@ public class FootballerAnimationController : MonoBehaviour {
     
     private void Awake() {
         _rigidbody = transform.parent.gameObject.GetComponent<Rigidbody>();
-        if (!_rigidbody) {
-            Debug.Log("No rigidbody in parent");
-        }
         _animator = GetComponent<Animator>();
     }
 

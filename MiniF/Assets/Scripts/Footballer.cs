@@ -184,7 +184,7 @@ public class Footballer : MonoBehaviour {
         }
 
         Vector3 targetVector = (targetPosition - position).normalized;
-        float inaccuracy = UnityEngine.Random.Range(0f, 15f - _footballerStats.ShotInaccuracy) * GeneralHelpers.RandomSign();
+        float inaccuracy = Random.Range(0f, 15f - _footballerStats.ShotInaccuracy) * GeneralHelpers.RandomSign();
 
         // if footballer is facing away from goal shots have lower accuracy
         if (Vector3.Angle(transform.right, targetPosition) > 85f) {
